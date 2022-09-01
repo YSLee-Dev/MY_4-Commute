@@ -40,13 +40,23 @@ struct RealtimeStationArrival : Decodable{
             return "진입"
         case "5":
             return "도착"
+        case "99":
+            return "도착"
         default:
             return ""
         }
     }
     
-    var useTime : Int{
+    var useTime : String{
         let time = Double(self.arrivalTime) ?? 60
-        return Int((time/60))
+        let min = Int((time/60))
+        
+        if min == 0{
+            return "\(Int(self.arrivalTime) ?? 00)초"
+        }else{
+            return "\(min)분"
+        }
+        
+        
     }
 }

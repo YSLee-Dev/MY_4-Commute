@@ -21,11 +21,11 @@ class MainTableViewCell : UITableViewCell{
     var line = UILabel().then{
         $0.text = "8호선"
         $0.layer.masksToBounds = true
-        $0.layer.cornerRadius = 25
+        $0.layer.cornerRadius = 30
         $0.backgroundColor = UIColor(hue: 0.9333, saturation: 0.89, brightness: 0.9, alpha: 1.0)
         $0.textColor = .white
         $0.textAlignment = .center
-        $0.font = .boldSystemFont(ofSize: 17)
+        $0.font = .boldSystemFont(ofSize: 15)
     }
     
     var station = UILabel().then{
@@ -59,7 +59,7 @@ class MainTableViewCell : UITableViewCell{
         self.line.snp.makeConstraints{
             $0.leading.equalToSuperview().inset(15)
             $0.centerY.equalToSuperview()
-            $0.width.height.equalTo(50)
+            $0.width.height.equalTo(60)
         }
         
         self.station.snp.makeConstraints{
