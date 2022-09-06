@@ -68,7 +68,7 @@ private extension ViewController {
            
             self.realInfo = []
             list.forEach{ [weak self] _ in
-                self?.realInfo.append(RealtimeStationArrival(upDown: "", arrivalTime: "", previousStation: "", code: "", subWayId: ""))
+                self?.realInfo.append(RealtimeStationArrival(upDown: "", arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: ""))
             }
             
             self.mainTableView.mainTableView.reloadData()
@@ -79,16 +79,14 @@ private extension ViewController {
     }
     
     func requestStationData(stationName : String, lineCode : String, updnLine: String, row : Int){
-        let urlString = "http://swopenapi.seoul.go.kr/api/subway/524365677079736c313034597a514e41/json/realtimeStationArrival/0/10/\(stationName)"
+        let urlString = "http://swopenapi.seoul.go.kr/api/subway/524365677079736c313034597a514e41/json/realtimeStationArrival/0/10/\(stationName.replacingOccurrences(of: "역", with: ""))"
         AF.request(urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "").responseDecodable(of: LiveStationModel.self){[weak self] response in
             guard let self = self else {return}
             switch response.result{
             case let .success(data):
                 for real in data.realtimeArrivalList{
                     if real.subWayId == lineCode && real.upDown == updnLine{
-                        self.realInfo.insert(real, at: row)
-                        // 빈 배열 제거
-                        self.realInfo.remove(at: row + 1)
+                        self.realInfo[row] = real
                         self.mainTableView.mainTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .left)
                         break
                     }
@@ -129,7 +127,7 @@ extension ViewController : UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "MainCell", for: indexPath) as? MainTableViewCell else {return UITableViewCell()}
         cell.cellSet(margin: Int(self.navigationController?.systemMinimumLayoutMargins.leading ?? 0))
-        cell.station.text = FixInfo.saveStation[indexPath.row].stationName
+        cell.station.text = "\(FixInfo.saveStation[indexPath.row].stationName) | \(FixInfo.saveStation[indexPath.row].updnLine)"
         
         let text = "\(FixInfo.saveStation[indexPath.row].line.replacingOccurrences(of: "0", with: ""))"
         

@@ -19,7 +19,6 @@ class MainTableViewCell : UITableViewCell{
     }
     
     var line = UILabel().then{
-        $0.text = "8호선"
         $0.layer.masksToBounds = true
         $0.layer.cornerRadius = 30
         $0.backgroundColor = UIColor(hue: 0.9333, saturation: 0.89, brightness: 0.9, alpha: 1.0)
@@ -29,21 +28,20 @@ class MainTableViewCell : UITableViewCell{
     }
     
     var station = UILabel().then{
-        $0.text = "단대오거리"
         $0.textColor = .systemGray
         $0.font = .systemFont(ofSize: 15)
     }
     
     var now = UILabel().then{
-        $0.text = "남한산성입구역 도착"
         $0.textColor = .black
         $0.font = .boldSystemFont(ofSize: 18)
     }
     
     var arrivalTime = UILabel().then{
-        $0.text = "3분"
         $0.textColor = .systemRed
         $0.font = .boldSystemFont(ofSize: 20)
+        $0.textAlignment = .right
+        $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
     
     func cellSet(margin : Int){
@@ -74,6 +72,7 @@ class MainTableViewCell : UITableViewCell{
         
         self.arrivalTime.snp.makeConstraints{
             $0.trailing.equalToSuperview().inset(15)
+            $0.leading.equalTo(self.station.snp.trailing).offset(5)
             $0.centerY.equalToSuperview()
         }
     }

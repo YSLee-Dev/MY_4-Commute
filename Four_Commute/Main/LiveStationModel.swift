@@ -15,6 +15,7 @@ struct RealtimeStationArrival : Decodable{
     let upDown : String
     let arrivalTime : String
     let previousStation : String
+    let subPrevious : String
     let code : String
     let subWayId : String
     
@@ -22,6 +23,7 @@ struct RealtimeStationArrival : Decodable{
         case upDown = "updnLine"
         case arrivalTime = "barvlDt"
         case previousStation = "arvlMsg3"
+        case subPrevious = "arvlMsg2"
         case code = "arvlCd"
         case subWayId = "subwayId"
     }
@@ -48,11 +50,15 @@ struct RealtimeStationArrival : Decodable{
     }
     
     var useTime : String{
-        let time = Double(self.arrivalTime) ?? 60
+        let time = Int(self.arrivalTime) ?? 0
         let min = Int((time/60))
         
         if min == 0{
-            return "\(Int(self.arrivalTime) ?? 00)초"
+            if time == 0{
+                return self.subPrevious
+            }else{
+                return "\(time)초"
+            }
         }else{
             return "\(min)분"
         }
