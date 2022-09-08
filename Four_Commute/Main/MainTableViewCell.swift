@@ -44,14 +44,22 @@ class MainTableViewCell : UITableViewCell{
         $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
     
+    var nowStackView = UIStackView().then{
+        $0.distribution = .equalSpacing
+        $0.spacing = 5
+        $0.axis = .vertical
+    }
+    
     func cellSet(margin : Int){
+        self.selectionStyle = .none
+        
         self.contentView.addSubview(self.mainBG)
         self.mainBG.snp.makeConstraints{
             $0.top.bottom.equalToSuperview().inset(10)
             $0.leading.trailing.equalToSuperview().inset(margin)
         }
         
-        [self.line, self.station, self.now, self.arrivalTime].forEach{
+        [self.line, self.nowStackView, self.arrivalTime].forEach{
             self.mainBG.addSubview($0)
         }
         self.line.snp.makeConstraints{
@@ -60,19 +68,18 @@ class MainTableViewCell : UITableViewCell{
             $0.width.height.equalTo(60)
         }
         
-        self.station.snp.makeConstraints{
+        self.nowStackView.snp.makeConstraints{
             $0.leading.equalTo(self.line.snp.trailing).offset(15)
-            $0.bottom.equalTo(self.line.snp.centerY)
+            $0.centerY.equalTo(self.line.snp.centerY)
+            $0.trailing.equalTo(self.arrivalTime.snp.leading)
         }
         
-        self.now.snp.makeConstraints{
-            $0.leading.equalTo(self.line.snp.trailing).offset(15)
-            $0.top.equalTo(self.line.snp.centerY)
-        }
+        self.nowStackView.addArrangedSubview(self.station)
+        self.nowStackView.addArrangedSubview(self.now)
         
         self.arrivalTime.snp.makeConstraints{
             $0.trailing.equalToSuperview().inset(15)
-            $0.leading.equalTo(self.station.snp.trailing).offset(5)
+            $0.leading.equalTo(self.nowStackView.snp.trailing)
             $0.centerY.equalToSuperview()
         }
     }

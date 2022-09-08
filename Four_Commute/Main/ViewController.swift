@@ -173,4 +173,7 @@ extension ViewController : UITableViewDelegate, UITableViewDataSource{
         FixInfo.saveStation[destinationIndexPath.row] = StationOldData
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.navigationController?.pushViewController(DetailVC(info: self.realInfo[indexPath.row], name: FixInfo.saveStation[indexPath.row].stationName), animated: true)
+    }
 }

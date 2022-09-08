@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D4AEB15C28C9D18000401679 /* DetailVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AEB15B28C9D18000401679 /* DetailVC.swift */; };
 		D4B4CF9E28BD9AD400E63D97 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B4CF9D28BD9AD400E63D97 /* AppDelegate.swift */; };
 		D4B4CFA028BD9AD400E63D97 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B4CF9F28BD9AD400E63D97 /* SceneDelegate.swift */; };
 		D4B4CFA228BD9AD400E63D97 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B4CFA128BD9AD400E63D97 /* ViewController.swift */; };
@@ -28,6 +29,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D4AEB15B28C9D18000401679 /* DetailVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailVC.swift; sourceTree = "<group>"; };
 		D4B4CF9A28BD9AD400E63D97 /* Four_Commute.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Four_Commute.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4B4CF9D28BD9AD400E63D97 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D4B4CF9F28BD9AD400E63D97 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -61,6 +63,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D4AEB15D28C9D18700401679 /* Detail */ = {
+			isa = PBXGroup;
+			children = (
+				D4AEB15B28C9D18000401679 /* DetailVC.swift */,
+			);
+			path = Detail;
+			sourceTree = "<group>";
+		};
 		D4B4CF9128BD9AD400E63D97 = {
 			isa = PBXGroup;
 			children = (
@@ -83,6 +93,7 @@
 				D4B4CF9D28BD9AD400E63D97 /* AppDelegate.swift */,
 				D4B4CF9F28BD9AD400E63D97 /* SceneDelegate.swift */,
 				D4B4CFC228BDCFED00E63D97 /* TabbarVC.swift */,
+				D4AEB15D28C9D18700401679 /* Detail */,
 				D4B4CFD028BF5F4100E63D97 /* SaveStation */,
 				D4B4CFC128BDCD0E00E63D97 /* Search */,
 				D4B4CFBE28BDBA8B00E63D97 /* Main */,
@@ -217,6 +228,7 @@
 				D4B4CFB228BD9F9400E63D97 /* MainTableView.swift in Sources */,
 				D4B4CFA028BD9AD400E63D97 /* SceneDelegate.swift in Sources */,
 				D4B4CFBD28BDA03100E63D97 /* MainTableViewCell.swift in Sources */,
+				D4AEB15C28C9D18000401679 /* DetailVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -20,6 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         self.window = UIWindow(windowScene: windowScene)
         window?.rootViewController = TabbarVC()
+        window?.tintColor = .black
         window?.makeKeyAndVisible()
     }
 
