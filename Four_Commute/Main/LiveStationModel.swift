@@ -18,6 +18,7 @@ struct RealtimeStationArrival : Decodable{
     let subPrevious : String
     let code : String
     let subWayId : String
+    let isFast : String?
     
     enum CodingKeys : String, CodingKey{
         case upDown = "updnLine"
@@ -26,6 +27,7 @@ struct RealtimeStationArrival : Decodable{
         case subPrevious = "arvlMsg2"
         case code = "arvlCd"
         case subWayId = "subwayId"
+        case isFast = "btrainSttus"
     }
     
     var useCode : String{
@@ -62,7 +64,10 @@ struct RealtimeStationArrival : Decodable{
         }else{
             return "\(min)분"
         }
-        
-        
+    }
+    
+    var useFast : String{
+        guard let fast = self.isFast else {return ""}
+        return "(\(fast.first ?? " "))"
     }
 }

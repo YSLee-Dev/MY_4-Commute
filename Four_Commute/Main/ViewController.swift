@@ -43,6 +43,7 @@ class ViewController: UIViewController {
         self.saveStationSet()
         self.fetchData()
     }
+    
 }
 
 private extension ViewController {
@@ -68,7 +69,7 @@ private extension ViewController {
            
             self.realInfo = []
             list.forEach{ [weak self] _ in
-                self?.realInfo.append(RealtimeStationArrival(upDown: "", arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: ""))
+                self?.realInfo.append(RealtimeStationArrival(upDown: "", arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: "", isFast: nil))
             }
             
             self.mainTableView.mainTableView.reloadData()
@@ -119,26 +120,17 @@ private extension ViewController {
 
 extension ViewController : UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print(self.realInfo.count, FixInfo.saveStation.count)
-        print(self.realInfo)
-        return FixInfo.saveStation.count
+        self.realInfo.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "MainCell", for: indexPath) as? MainTableViewCell else {return UITableViewCell()}
         cell.cellSet(margin: Int(self.navigationController?.systemMinimumLayoutMargins.leading ?? 0))
         cell.station.text = "\(FixInfo.saveStation[indexPath.row].stationName) | \(FixInfo.saveStation[indexPath.row].updnLine)"
-        
-        let text = "\(FixInfo.saveStation[indexPath.row].line.replacingOccurrences(of: "0", with: ""))"
-        
-        if text.count < 4 {
-            cell.line.text =  String(text[text.startIndex ..< text.index(text.startIndex, offsetBy: text.count)])
-        }else{
-            cell.line.text =  String(text[text.startIndex ..< text.index(text.startIndex, offsetBy: 4)])
-        }
+        cell.line.text =  FixInfo.saveStation[indexPath.row].useLine
 
         cell.arrivalTime.text = "\(self.realInfo[indexPath.row].useTime)"
-        cell.now.text = "\(self.realInfo[indexPath.row].previousStation)\(self.realInfo[indexPath.row].useCode)"
+        cell.now.text = "\(self.realInfo[indexPath.row].useFast)\(self.realInfo[indexPath.row].previousStation)\(self.realInfo[indexPath.row].useCode)"
         cell.lineColor(line: FixInfo.saveStation[indexPath.row].line)
         return cell
     }
@@ -174,6 +166,6 @@ extension ViewController : UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.navigationController?.pushViewController(DetailVC(info: self.realInfo[indexPath.row], name: FixInfo.saveStation[indexPath.row].stationName), animated: true)
+        self.navigationController?.pushViewController(DetailVC(info: self.realInfo[indexPath.row], index: indexPath), animated: true)
     }
 }

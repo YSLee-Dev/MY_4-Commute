@@ -58,10 +58,10 @@ extension ResultVC {
         
         let alert = UIAlertController(title: "\(title)을 선택해주세요.", message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: up, style: .destructive){ _ in
-            FixInfo.saveStation.append(SaveStationModel(stationName: row[indexPath.row].stationName, updnLine: up, line: row[indexPath.row].lineNumber.rawValue, lineCode: row[indexPath.row].lineCode))
+            FixInfo.saveStation.append(SaveStationModel(type: .subway, stationName: row[indexPath.row].stationName, updnLine: up, line: row[indexPath.row].lineNumber.rawValue, lineCode: row[indexPath.row].lineCode))
         })
         alert.addAction(UIAlertAction(title: down, style: .default){ _ in
-            FixInfo.saveStation.append(SaveStationModel(stationName: row[indexPath.row].stationName, updnLine: down, line: row[indexPath.row].lineNumber.rawValue, lineCode: row[indexPath.row].lineCode))
+            FixInfo.saveStation.append(SaveStationModel(type: .subway, stationName: row[indexPath.row].stationName, updnLine: down, line: row[indexPath.row].lineNumber.rawValue, lineCode: row[indexPath.row].lineCode))
         })
         alert.addAction(UIAlertAction(title: "취소", style: .cancel))
         

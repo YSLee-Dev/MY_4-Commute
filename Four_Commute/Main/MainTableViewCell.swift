@@ -21,7 +21,6 @@ class MainTableViewCell : UITableViewCell{
     var line = UILabel().then{
         $0.layer.masksToBounds = true
         $0.layer.cornerRadius = 30
-        $0.backgroundColor = UIColor(hue: 0.9333, saturation: 0.89, brightness: 0.9, alpha: 1.0)
         $0.textColor = .white
         $0.textAlignment = .center
         $0.font = .boldSystemFont(ofSize: 15)
@@ -55,7 +54,7 @@ class MainTableViewCell : UITableViewCell{
         
         self.contentView.addSubview(self.mainBG)
         self.mainBG.snp.makeConstraints{
-            $0.top.bottom.equalToSuperview().inset(10)
+            $0.top.bottom.equalToSuperview().inset(7.5)
             $0.leading.trailing.equalToSuperview().inset(margin)
         }
         
