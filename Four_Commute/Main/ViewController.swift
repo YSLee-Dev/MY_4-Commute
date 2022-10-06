@@ -10,6 +10,8 @@ import UIKit
 import SnapKit
 import Then
 import Alamofire
+import RxSwift
+import RxCocoa
 
 class ViewController: UIViewController {
     
@@ -28,11 +30,16 @@ class ViewController: UIViewController {
     
     lazy var refresh = UIRefreshControl().then{
         $0.addTarget(self, action: #selector(fetchData), for: .valueChanged)
+        $0.backgroundColor = .white
+        $0.attributedTitle = NSAttributedString("당겨서 새로고침")
     }
     
     lazy var editBtn = UIBarButtonItem(title: "편집", style: .done, target: self, action: #selector(editBtnClick))
     
     var realInfo : [RealtimeStationArrival] = []
+    var rxRealInfo = BehaviorSubject<[RealtimeStationArrival]>(value: [])
+    
+    var bag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,11 +105,53 @@ private extension ViewController {
         }
     }
     
+    func rxReqeustData(rxObservable : Observable<SaveStationModel>){
+        rxObservable
+            .map{ model -> URL? in
+                let urlString = "http://swopenapi.seoul.go.kr/api/subway/524365677079736c313034597a514e41/json/realtimeStationArrival/0/10/\(model.stationName.replacingOccurrences(of: "역", with: ""))".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+                
+                return URL(string: urlString ?? "") ?? nil
+            }
+            .filter{
+                $0 != nil
+            }
+            .map{ url -> URLRequest in
+                var request = URLRequest(url: url!)
+                request.httpMethod = "GET"
+                return request
+            }
+            .flatMap{ request -> Observable<(response : HTTPURLResponse, data : Data)> in
+                URLSession.shared.rx.response(request: request)
+            }
+            .filter{ response, _ in
+                200..<300 ~= response.statusCode
+            }
+            .map{ _, data -> LiveStationModel? in
+                do{
+                    let json = try JSONDecoder().decode(LiveStationModel.self, from: data)
+                    return json
+                }catch{
+                    print(error)
+                    return nil
+                }
+            }
+            .filter{
+                $0 != nil
+            }
+            
+            .subscribe(onNext:{
+               print($0)
+            })
+            .disposed(by: bag)
+    }
+    
     @objc func fetchData(){
         FixInfo.saveStation.indices.forEach{ [weak self] in
             self?.refresh.endRefreshing()
             self?.requestStationData(stationName: FixInfo.saveStation[$0].stationName, lineCode: FixInfo.saveStation[$0].lineCode, updnLine: FixInfo.saveStation[$0].updnLine, row: $0)
         }
+        
+        rxReqeustData(rxObservable: Observable.from(FixInfo.saveStation))
     }
     
     @objc func editBtnClick(){
