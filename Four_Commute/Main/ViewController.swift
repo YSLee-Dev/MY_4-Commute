@@ -37,7 +37,6 @@ class ViewController: UIViewController {
     lazy var editBtn = UIBarButtonItem(title: "편집", style: .done, target: self, action: #selector(editBtnClick))
     
     var realInfo : [RealtimeStationArrival] = []
-    var rxRealInfo = BehaviorSubject<[RealtimeStationArrival]>(value: [])
     
     var bag = DisposeBag()
     
@@ -86,27 +85,11 @@ private extension ViewController {
         }
     }
     
-    func requestStationData(stationName : String, lineCode : String, updnLine: String, row : Int){
-        let urlString = "http://swopenapi.seoul.go.kr/api/subway/524365677079736c313034597a514e41/json/realtimeStationArrival/0/10/\(stationName.replacingOccurrences(of: "역", with: ""))"
-        AF.request(urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "").responseDecodable(of: LiveStationModel.self){[weak self] response in
-            guard let self = self else {return}
-            switch response.result{
-            case let .success(data):
-                for real in data.realtimeArrivalList{
-                    if real.subWayId == lineCode && real.upDown == updnLine{
-                        self.realInfo[row] = real
-                        self.mainTableView.mainTableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .left)
-                        break
-                    }
-                }
-            case let .failure(error):
-                print(error)
-            }
-        }
-    }
-    
     func rxReqeustData(rxObservable : Observable<SaveStationModel>){
-        rxObservable
+        
+        let list = rxObservable
+        
+        let request = rxObservable
             .map{ model -> URL? in
                 let urlString = "http://swopenapi.seoul.go.kr/api/subway/524365677079736c313034597a514e41/json/realtimeStationArrival/0/10/\(model.stationName.replacingOccurrences(of: "역", with: ""))".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
                 
@@ -138,19 +121,33 @@ private extension ViewController {
             .filter{
                 $0 != nil
             }
-            
-            .subscribe(onNext:{
-               print($0)
+        
+       Observable
+            .zip(list, request){ list, request -> RealtimeStationArrival? in
+                guard let live = request else {return nil}
+                
+                for x in live.realtimeArrivalList{
+                    if list.lineCode == x.subWayId && list.updnLine == x.upDown{
+                        return x
+                    }
+                }
+                return nil
+            }
+            .observe(on: MainScheduler.instance)
+            .filter{
+                $0 != nil
+            }
+            .enumerated()
+            .subscribe(onNext: { index, data in
+                self.realInfo[index] = data!
+                self.mainTableView.mainTableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .left)
             })
             .disposed(by: bag)
+        
     }
     
     @objc func fetchData(){
-        FixInfo.saveStation.indices.forEach{ [weak self] in
-            self?.refresh.endRefreshing()
-            self?.requestStationData(stationName: FixInfo.saveStation[$0].stationName, lineCode: FixInfo.saveStation[$0].lineCode, updnLine: FixInfo.saveStation[$0].updnLine, row: $0)
-        }
-        
+        self.refresh.endRefreshing()
         rxReqeustData(rxObservable: Observable.from(FixInfo.saveStation))
     }
     
