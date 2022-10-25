@@ -92,7 +92,6 @@ private extension ViewController {
         let request = rxObservable
             .map{ model -> URL? in
                 let urlString = "http://swopenapi.seoul.go.kr/api/subway/524365677079736c313034597a514e41/json/realtimeStationArrival/0/10/\(model.stationName.replacingOccurrences(of: "역", with: ""))".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
-                
                 return URL(string: urlString ?? "") ?? nil
             }
             .filter{
@@ -103,7 +102,7 @@ private extension ViewController {
                 request.httpMethod = "GET"
                 return request
             }
-            .flatMap{ request -> Observable<(response : HTTPURLResponse, data : Data)> in
+            .concatMap{ request -> Observable<(response : HTTPURLResponse, data : Data)> in
                 URLSession.shared.rx.response(request: request)
             }
             .filter{ response, _ in
@@ -125,7 +124,6 @@ private extension ViewController {
        Observable
             .zip(list, request){ list, request -> RealtimeStationArrival? in
                 guard let live = request else {return nil}
-                
                 for x in live.realtimeArrivalList{
                     if list.lineCode == x.subWayId && list.updnLine == x.upDown{
                         return x

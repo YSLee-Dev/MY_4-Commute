@@ -10,48 +10,51 @@ import UIKit
 import SnapKit
 import Then
 import Alamofire
+import RxSwift
+import RxCocoa
 
 class SearchVC : UIViewController{
-    lazy var searchVC = UISearchController(searchResultsController: ResultVC()).then{
-        $0.searchBar.placeholder = "지하철역을 입력하세요."
-        $0.searchResultsUpdater = self
-    }
+    var searchVC : SearchBarVC?
+    
+    let stationSearch = StationSearch()
+    let resultVC = ResultVC()
+    let bag = DisposeBag()
     
     override func viewDidLoad() {
         self.viewSet()
+        self.bind()
     }
 }
 
 private extension SearchVC{
     func viewSet(){
+        self.searchVC = SearchBarVC(searchResultsController: self.resultVC)
         self.navigationItem.searchController = self.searchVC
         self.view.backgroundColor = .white
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.title = "검색"
-    }
-    
-    func requestData(name : String, resultVC : ResultVC){
-        let stringUrl = "http://openapi.seoul.go.kr:8088/4a7242674979736c37346143586d63/json/SearchInfoBySubwayNameService/1/5/\(name)"
-        print(stringUrl)
-        AF.request(stringUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "").responseDecodable(of: StationModel.self){ response in
-            switch response.result{
-            case let .success(data):
-                resultVC.row = data.SearchInfoBySubwayNameService.row
-            case let .failure(error):
-                resultVC.row = nil
-                print(error)
-            }
-        }
-    }
-}
-
-extension SearchVC : UISearchResultsUpdating{
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text else {return}
-        if text != ""{
-            guard let vc = searchController.searchResultsController as? ResultVC else {return}
-            self.requestData(name: text, resultVC: vc)
-        }
         
     }
+    
+    func bind(){
+        self.searchVC!.searchBarText
+            .filter{$0 != nil}
+            .flatMapLatest{
+                self.stationSearch.search(station: $0!)
+            }
+            .map{ data -> StationModel? in
+                guard case .success(let value) = data else{
+                    return nil
+                }
+                return value
+            }
+            .filter{$0 != nil}
+            .map{ stationModel -> [row] in
+               stationModel!.SearchInfoBySubwayNameService.row
+            }
+            .asSignal(onErrorJustReturn: [])
+            .emit(to: self.resultVC.resultRow)
+            .disposed(by: self.bag)
+    }
+    
 }
