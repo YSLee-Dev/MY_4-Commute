@@ -15,10 +15,7 @@ import RxCocoa
 
 class ViewController: UIViewController {
     
-    lazy var mainTableView = MainTableView().then{
-        $0.mainTableView.delegate = self
-        $0.mainTableView.dataSource = self
-    }
+    var mainTableView = MainTableView()
     
     let nowDate : String = {
         let DataFormmater = DateFormatter()
@@ -29,16 +26,18 @@ class ViewController: UIViewController {
     }()
     
     lazy var refresh = UIRefreshControl().then{
-        $0.addTarget(self, action: #selector(fetchData), for: .valueChanged)
+        //$0.addTarget(self, action: #selector(fetchData), for: .valueChanged)
         $0.backgroundColor = .white
         $0.attributedTitle = NSAttributedString("당겨서 새로고침")
     }
     
-    lazy var editBtn = UIBarButtonItem(title: "편집", style: .done, target: self, action: #selector(editBtnClick))
+    // lazy var editBtn = UIBarButtonItem(title: "편집", style: .done, target: self, action: #selector(editBtnClick))
     
-    var realInfo : [RealtimeStationArrival] = []
-    
+    var stationArrival = StationArrival()
+    var saveStationLoad = SaveStationLoad()
     var bag = DisposeBag()
+    
+    var leftSize : CGFloat?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,8 +45,7 @@ class ViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        self.saveStationSet()
-        self.fetchData()
+        self.bind()
     }
     
 }
@@ -62,92 +60,50 @@ private extension ViewController {
             $0.edges.equalToSuperview()
         }
         
-        self.mainTableView.mainTableView.refreshControl = self.refresh
-        self.navigationItem.rightBarButtonItem = self.editBtn
+        // self.mainTableView.mainTableView.refreshControl = self.refresh
+        // self.navigationItem.rightBarButtonItem = self.editBtn
+        
+        self.leftSize = self.navigationController?.systemMinimumLayoutMargins.leading ?? 0
     }
     
-    func saveStationSet(){
-        guard let udValue = UserDefaults.standard.value(forKey: "saveStation") else {return}
-        guard let data = udValue as? Data else {return}
-        do {
-            let list = try PropertyListDecoder().decode([SaveStationModel].self, from: data)
-            FixInfo.saveStation = list
-           
-            self.realInfo = []
-            list.forEach{ [weak self] _ in
-                self?.realInfo.append(RealtimeStationArrival(upDown: "", arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: "", isFast: nil))
+    func bind(){
+        let stations = self.saveStationLoad.stationLoad()
+            .asObservable()
+            .flatMap{ data -> Observable<SaveStationModel> in
+                guard case .success(let value) = data else {return .never()}
+                return Observable.from(value)
             }
-            
-            self.mainTableView.mainTableView.reloadData()
-            
-        }catch{
-            print(error)
-        }
-    }
+            .share()
     
-    func rxReqeustData(rxObservable : Observable<SaveStationModel>){
-        
-        let list = rxObservable
-        
-        let request = rxObservable
-            .map{ model -> URL? in
-                let urlString = "http://swopenapi.seoul.go.kr/api/subway/524365677079736c313034597a514e41/json/realtimeStationArrival/0/10/\(model.stationName.replacingOccurrences(of: "역", with: ""))".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
-                return URL(string: urlString ?? "") ?? nil
+        let arrivalData = stations
+            .concatMap { station in
+                self.stationArrival.stationArrivalRequest(stationName: station.stationName)
             }
-            .filter{
-                $0 != nil
+            .map{ data -> LiveStationModel? in
+                guard case .success(let value) = data else {return nil}
+                return value
             }
-            .map{ url -> URLRequest in
-                var request = URLRequest(url: url!)
-                request.httpMethod = "GET"
-                return request
-            }
-            .concatMap{ request -> Observable<(response : HTTPURLResponse, data : Data)> in
-                URLSession.shared.rx.response(request: request)
-            }
-            .filter{ response, _ in
-                200..<300 ~= response.statusCode
-            }
-            .map{ _, data -> LiveStationModel? in
-                do{
-                    let json = try JSONDecoder().decode(LiveStationModel.self, from: data)
-                    return json
-                }catch{
-                    print(error)
-                    return nil
-                }
-            }
-            .filter{
-                $0 != nil
-            }
-        
-       Observable
-            .zip(list, request){ list, request -> RealtimeStationArrival? in
-                guard let live = request else {return nil}
-                for x in live.realtimeArrivalList{
-                    if list.lineCode == x.subWayId && list.updnLine == x.upDown{
-                        return x
+            .filter{$0 != nil}
+
+        Observable
+            .zip(stations, arrivalData){ station, data -> RealtimeStationArrival in
+                for x in data!.realtimeArrivalList{
+                    if station.lineCode == x.subWayId && station.updnLine == x.upDown{
+                        print(station.useLine)
+                        return RealtimeStationArrival(upDown: x.upDown, arrivalTime: x.upDown, previousStation: x.previousStation, subPrevious: x.subPrevious, code: x.code, subWayId: x.subWayId, isFast: x.isFast, stationName: x.stationName, lineNumber: station.line, useLine: station.useLine, size: "\(self.leftSize ?? 0)")
                     }
                 }
-                return nil
+                
+                return  RealtimeStationArrival(upDown: "", arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: "", isFast: "", stationName: "", lineNumber: "", useLine: "", size: "")
             }
-            .observe(on: MainScheduler.instance)
-            .filter{
-                $0 != nil
-            }
-            .enumerated()
-            .subscribe(onNext: { index, data in
-                self.realInfo[index] = data!
-                self.mainTableView.mainTableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .left)
-            })
-            .disposed(by: bag)
+            .toArray()
+            .asObservable()
+            .bind(to: self.mainTableView.stationData)
+            .disposed(by: self.bag)
         
     }
     
-    @objc func fetchData(){
-        self.refresh.endRefreshing()
-        rxReqeustData(rxObservable: Observable.from(FixInfo.saveStation))
-    }
+    /*
     
     @objc func editBtnClick(){
         if self.mainTableView.mainTableView.isEditing {
@@ -159,29 +115,10 @@ private extension ViewController {
         }
         self.mainTableView.mainTableView.reloadData()
     }
-    
+     */
 }
-
+/*
 extension ViewController : UITableViewDelegate, UITableViewDataSource{
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.realInfo.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "MainCell", for: indexPath) as? MainTableViewCell else {return UITableViewCell()}
-        cell.cellSet(margin: Int(self.navigationController?.systemMinimumLayoutMargins.leading ?? 0))
-        cell.station.text = "\(FixInfo.saveStation[indexPath.row].stationName) | \(FixInfo.saveStation[indexPath.row].updnLine)"
-        cell.line.text =  FixInfo.saveStation[indexPath.row].useLine
-
-        cell.arrivalTime.text = "\(self.realInfo[indexPath.row].useTime)"
-        cell.now.text = "\(self.realInfo[indexPath.row].useFast)\(self.realInfo[indexPath.row].previousStation)\(self.realInfo[indexPath.row].useCode)"
-        cell.lineColor(line: FixInfo.saveStation[indexPath.row].line)
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        100
-    }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         "\(self.realInfo.count)번 환승"
@@ -213,3 +150,5 @@ extension ViewController : UITableViewDelegate, UITableViewDataSource{
         self.navigationController?.pushViewController(DetailVC(info: self.realInfo[indexPath.row], index: indexPath), animated: true)
     }
 }
+
+*/

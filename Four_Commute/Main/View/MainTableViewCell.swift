@@ -49,7 +49,7 @@ class MainTableViewCell : UITableViewCell{
         $0.axis = .vertical
     }
     
-    func cellSet(margin : Int){
+    func cellSet(margin : Double){
         self.selectionStyle = .none
         
         self.contentView.addSubview(self.mainBG)

@@ -19,6 +19,10 @@ struct RealtimeStationArrival : Decodable{
     let code : String
     let subWayId : String
     let isFast : String?
+    let stationName : String
+    let lineNumber : String?
+    let useLine : String?
+    let size : String?
     
     enum CodingKeys : String, CodingKey{
         case upDown = "updnLine"
@@ -28,7 +32,12 @@ struct RealtimeStationArrival : Decodable{
         case code = "arvlCd"
         case subWayId = "subwayId"
         case isFast = "btrainSttus"
+        case stationName = "statnNm"
+        case lineNumber = "lineNumber"
+        case useLine = "useLine"
+        case size = "size"
     }
+    
     
     var useCode : String{
         switch code {

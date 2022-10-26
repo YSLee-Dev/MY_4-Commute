@@ -14,6 +14,7 @@ import RxCocoa
 
 class ResultVC : UITableViewController{
     let resultRow = PublishRelay<[row]>()
+    let clickRow = PublishRelay<row>()
     let bag = DisposeBag()
     
     override func viewDidLoad() {
@@ -41,29 +42,9 @@ private extension ResultVC{
                 return cell
             }
             .disposed(by: self.bag)
+        
+        self.tableView.rx.modelSelected(row.self)
+            .bind(to: self.clickRow)
+            .disposed(by: self.bag)
     }
-}
-
-extension ResultVC {
-    /*
-     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-     guard let row = self.row else {return}
-     let title = row[indexPath.row].useLine == "2호선" ? "내선/외선" : "상하행선"
-     
-     let up = title == "내선/외선" ? "내선" : "상행"
-     let down = title == "내선/외선" ? "외선" : "하행"
-     
-     let alert = UIAlertController(title: "\(title)을 선택해주세요.", message: nil, preferredStyle: .alert)
-     alert.addAction(UIAlertAction(title: up, style: .destructive){ _ in
-     FixInfo.saveStation.append(SavtationModel(type: .subway, stationName: row[indexPath.row].stationName, updnLine: up, line: row[indexPath.row].lineNumber.rawValue, lineCode: row[indexPath.row].lineCode))
-     })
-     alert.addAction(UIAlertAction(title: down, style: .default){ _ in
-     FixInfo.saveStation.append(SaveStationModel(type: .subway, stationName: row[indexPath.row].stationName, updnLine: down, line: row[indexPath.row].lineNumber.rawValue, lineCode: row[indexPath.row].lineCode))
-     })
-     alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-     
-     self.present(alert, animated: true)
-     
-     }
-     */
 }
