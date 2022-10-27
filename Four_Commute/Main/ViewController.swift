@@ -25,27 +25,17 @@ class ViewController: UIViewController {
         return DataFormmater.string(from: Date())
     }()
     
-    lazy var refresh = UIRefreshControl().then{
-        //$0.addTarget(self, action: #selector(fetchData), for: .valueChanged)
-        $0.backgroundColor = .white
-        $0.attributedTitle = NSAttributedString("당겨서 새로고침")
-    }
-    
     // lazy var editBtn = UIBarButtonItem(title: "편집", style: .done, target: self, action: #selector(editBtnClick))
     
     var stationArrival = StationArrival()
     var saveStationLoad = SaveStationLoad()
     var bag = DisposeBag()
     
-    var leftSize : CGFloat?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.viewSet()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
         self.bind()
+        self.dataBind()
     }
     
 }
@@ -60,13 +50,9 @@ private extension ViewController {
             $0.edges.equalToSuperview()
         }
         
-        // self.mainTableView.mainTableView.refreshControl = self.refresh
-        // self.navigationItem.rightBarButtonItem = self.editBtn
-        
-        self.leftSize = self.navigationController?.systemMinimumLayoutMargins.leading ?? 0
     }
     
-    func bind(){
+    func dataBind(){
         let stations = self.saveStationLoad.stationLoad()
             .asObservable()
             .flatMap{ data -> Observable<SaveStationModel> in
@@ -74,7 +60,7 @@ private extension ViewController {
                 return Observable.from(value)
             }
             .share()
-    
+        
         let arrivalData = stations
             .concatMap { station in
                 self.stationArrival.stationArrivalRequest(stationName: station.stationName)
@@ -84,23 +70,37 @@ private extension ViewController {
                 return value
             }
             .filter{$0 != nil}
-
-        Observable
+        
+       let data = Observable
             .zip(stations, arrivalData){ station, data -> RealtimeStationArrival in
                 for x in data!.realtimeArrivalList{
-                    if station.lineCode == x.subWayId && station.updnLine == x.upDown{
-                        print(station.useLine)
-                        return RealtimeStationArrival(upDown: x.upDown, arrivalTime: x.upDown, previousStation: x.previousStation, subPrevious: x.subPrevious, code: x.code, subWayId: x.subWayId, isFast: x.isFast, stationName: x.stationName, lineNumber: station.line, useLine: station.useLine, size: "\(self.leftSize ?? 0)")
+                    if station.lineCode == x.subWayId && station.updnLine == x.upDown && station.stationName == x.stationName{
+                        return RealtimeStationArrival(upDown: x.upDown, arrivalTime: x.upDown, previousStation: x.previousStation, subPrevious: x.subPrevious, code: x.code, subWayId: x.subWayId, isFast: x.isFast, stationName: x.stationName, lineNumber: station.line, useLine: station.useLine)
                     }
                 }
                 
-                return  RealtimeStationArrival(upDown: "", arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: "", isFast: "", stationName: "", lineNumber: "", useLine: "", size: "")
+                return  RealtimeStationArrival(upDown: station.updnLine, arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: "", isFast: "X", stationName: station.stationName, lineNumber: station.line, useLine: station.useLine)
             }
             .toArray()
             .asObservable()
+            .share()
+        
+        data
             .bind(to: self.mainTableView.stationData)
             .disposed(by: self.bag)
-        
+            
+        self.mainTableView.refreshOn
+            .withLatestFrom(data)
+            .bind(to: self.mainTableView.stationData)
+            .disposed(by: self.bag)
+    }
+    
+    func bind(){
+        self.mainTableView.refreshOn
+            .subscribe(onNext: {
+                self.dataBind()
+            })
+            .disposed(by: self.bag)
     }
     
     /*

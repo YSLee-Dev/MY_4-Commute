@@ -23,24 +23,25 @@ class MainTableViewCell : UITableViewCell{
         $0.layer.cornerRadius = 30
         $0.textColor = .white
         $0.textAlignment = .center
-        $0.font = .boldSystemFont(ofSize: 15)
+        $0.font = .boldSystemFont(ofSize: 14)
     }
     
     var station = UILabel().then{
         $0.textColor = .systemGray
-        $0.font = .systemFont(ofSize: 15)
+        $0.font = .systemFont(ofSize: 14)
     }
     
     var now = UILabel().then{
         $0.textColor = .black
-        $0.font = .boldSystemFont(ofSize: 18)
+        $0.font = .boldSystemFont(ofSize: 16)
+        $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
     
     var arrivalTime = UILabel().then{
         $0.textColor = .systemRed
-        $0.font = .boldSystemFont(ofSize: 20)
+        $0.font = .boldSystemFont(ofSize: 18)
         $0.textAlignment = .right
-        $0.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        
     }
     
     var nowStackView = UIStackView().then{
@@ -49,13 +50,13 @@ class MainTableViewCell : UITableViewCell{
         $0.axis = .vertical
     }
     
-    func cellSet(margin : Double){
+    func cellSet(){
         self.selectionStyle = .none
         
         self.contentView.addSubview(self.mainBG)
         self.mainBG.snp.makeConstraints{
             $0.top.bottom.equalToSuperview().inset(7.5)
-            $0.leading.trailing.equalToSuperview().inset(margin)
+            $0.leading.trailing.equalToSuperview().inset(20)
         }
         
         [self.line, self.nowStackView, self.arrivalTime].forEach{

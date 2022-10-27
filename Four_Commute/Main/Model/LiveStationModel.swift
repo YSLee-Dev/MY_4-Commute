@@ -22,7 +22,6 @@ struct RealtimeStationArrival : Decodable{
     let stationName : String
     let lineNumber : String?
     let useLine : String?
-    let size : String?
     
     enum CodingKeys : String, CodingKey{
         case upDown = "updnLine"
@@ -35,7 +34,6 @@ struct RealtimeStationArrival : Decodable{
         case stationName = "statnNm"
         case lineNumber = "lineNumber"
         case useLine = "useLine"
-        case size = "size"
     }
     
     
@@ -54,7 +52,7 @@ struct RealtimeStationArrival : Decodable{
         case "5":
             return "도착"
         case "99":
-            return "도착"
+            return "부근"
         default:
             return ""
         }
@@ -66,7 +64,7 @@ struct RealtimeStationArrival : Decodable{
         
         if min == 0{
             if time == 0{
-                return self.subPrevious
+                return self.cutString(cutString: self.subPrevious)
             }else{
                 return "\(time)초"
             }
@@ -78,5 +76,10 @@ struct RealtimeStationArrival : Decodable{
     var useFast : String{
         guard let fast = self.isFast else {return ""}
         return "(\(fast.first ?? " "))"
+    }
+    
+    func cutString(cutString : String) -> String{
+        guard let sub = cutString.firstIndex(of: "(") else { return  cutString }
+        return String(cutString[cutString.startIndex ..< sub])
     }
 }

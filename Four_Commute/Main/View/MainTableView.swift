@@ -16,7 +16,13 @@ import RxCocoa
 class MainTableView : UITableView {
     
     let stationData = PublishRelay<[RealtimeStationArrival]>()
+    let refreshOn = PublishRelay<Void>()
     let bag = DisposeBag()
+    
+    lazy var refresh = UIRefreshControl().then{
+        $0.backgroundColor = .white
+        $0.attributedTitle = NSAttributedString("당겨서 새로고침")
+    }
     
     override init(frame: CGRect, style: UITableView.Style) {
         super.init(frame: frame, style: style)
@@ -33,6 +39,7 @@ class MainTableView : UITableView {
         self.dataSource = nil
         self.rowHeight = 100
         self.separatorStyle = .none
+        self.refreshControl = self.refresh
     }
     
     private func bind(){
@@ -40,15 +47,23 @@ class MainTableView : UITableView {
             .bind(to: self.rx.items){ tv, row, data in
                 guard let cell = tv.dequeueReusableCell(withIdentifier: "MainCell", for: IndexPath(row: row, section: 0)) as? MainTableViewCell else {return UITableViewCell()}
                 
-                cell.cellSet(margin: Double(data.size ?? "") ?? 0)
+                cell.cellSet()
                 cell.station.text = "\(data.stationName) | \(data.upDown)"
                 cell.line.text = data.useLine
 
                 cell.arrivalTime.text = "\(data.useTime)"
-                cell.now.text = "\(data.useFast)\(data.previousStation)\(data.useCode)"
+                cell.now.text = "\(data.useFast)\(data.cutString(cutString: data.previousStation)) \(data.useCode)"
                 cell.lineColor(line: data.lineNumber!)
+                
+                self.refreshControl?.endRefreshing()
+                
                 return cell
             }
+            .disposed(by: self.bag)
+        
+        self.refreshControl?.rx.controlEvent(.valueChanged)
+            .asSignal(onErrorJustReturn: ())
+            .emit(to: self.refreshOn)
             .disposed(by: self.bag)
     }
 }
