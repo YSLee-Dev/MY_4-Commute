@@ -39,14 +39,6 @@ class ViewController: UIViewController {
         self.mainTableView.bind(viewModel: viewModel.mainTableViewModel)
         
         viewModel.mainTableViewModel.refreshOn
-            .flatMap{
-                let stations = viewModel.saveStationLoadModel()
-                return viewModel.stationArrivalRequest(stations: stations)
-            }
-            .bind(to: viewModel.mainTableViewModel.stationData)
-            .disposed(by: self.bag)
-        
-        viewModel.mainTableViewModel.refreshOn
             .accept(Void())
 
         

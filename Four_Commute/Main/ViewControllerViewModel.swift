@@ -12,9 +12,24 @@ import RxCocoa
 
 struct ViewControllerViewModel{
     let mainTableViewModel = MainTableViewModel()
+    let bag = DisposeBag()
     
     var stationArrival = StationArrival()
     var saveStationLoad = SaveStationLoad()
+    
+    init(){
+       set()
+    }
+    
+    func set(){
+        mainTableViewModel.refreshOn
+            .flatMap{
+                let stations = saveStationLoadModel()
+                return stationArrivalRequest(stations: stations)
+            }
+            .bind(to: mainTableViewModel.stationData)
+            .disposed(by: self.bag)
+    }
     
     func saveStationLoadModel() -> Observable<SaveStationModel>{
         self.saveStationLoad.stationLoad()
