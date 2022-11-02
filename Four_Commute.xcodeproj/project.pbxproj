@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		349CF30229126ADA00BD6261 /* MainTableViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349CF30129126ADA00BD6261 /* MainTableViewModel.swift */; };
+		349CF30429126BCF00BD6261 /* ViewControllerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349CF30329126BCF00BD6261 /* ViewControllerViewModel.swift */; };
 		D4259CEE29092FED006FA32D /* StationArrival.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4259CED29092FED006FA32D /* StationArrival.swift */; };
 		D4259CF02909340B006FA32D /* SaveStationLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4259CEF2909340B006FA32D /* SaveStationLoad.swift */; };
 		D4AEB15C28C9D18000401679 /* DetailVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AEB15B28C9D18000401679 /* DetailVC.swift */; };
@@ -35,6 +37,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		349CF30129126ADA00BD6261 /* MainTableViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableViewModel.swift; sourceTree = "<group>"; };
+		349CF30329126BCF00BD6261 /* ViewControllerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerViewModel.swift; sourceTree = "<group>"; };
 		D4259CED29092FED006FA32D /* StationArrival.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationArrival.swift; sourceTree = "<group>"; };
 		D4259CEF2909340B006FA32D /* SaveStationLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveStationLoad.swift; sourceTree = "<group>"; };
 		D4AEB15B28C9D18000401679 /* DetailVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailVC.swift; sourceTree = "<group>"; };
@@ -79,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				D4B4CFB128BD9F9400E63D97 /* MainTableView.swift */,
+				349CF30129126ADA00BD6261 /* MainTableViewModel.swift */,
 				D4B4CFBC28BDA03100E63D97 /* MainTableViewCell.swift */,
 			);
 			path = View;
@@ -88,8 +93,8 @@
 			isa = PBXGroup;
 			children = (
 				D4B4CFD128BF634000E63D97 /* LiveStationModel.swift */,
-				D4259CED29092FED006FA32D /* StationArrival.swift */,
 				D4259CEF2909340B006FA32D /* SaveStationLoad.swift */,
+				D4259CED29092FED006FA32D /* StationArrival.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -148,6 +153,7 @@
 			isa = PBXGroup;
 			children = (
 				D4B4CFA128BD9AD400E63D97 /* ViewController.swift */,
+				349CF30329126BCF00BD6261 /* ViewControllerViewModel.swift */,
 				D4259CEC29092F97006FA32D /* Model */,
 				D4259CEB29092F8F006FA32D /* View */,
 			);
@@ -266,6 +272,7 @@
 				D4B182AC2907DE9300E590AC /* StationSearch.swift in Sources */,
 				D4B4CFC928BDDF5C00E63D97 /* StationModel.swift in Sources */,
 				D4B4CFC528BDD29500E63D97 /* ResultVC.swift in Sources */,
+				349CF30429126BCF00BD6261 /* ViewControllerViewModel.swift in Sources */,
 				D4259CEE29092FED006FA32D /* StationArrival.swift in Sources */,
 				D4B4CFA228BD9AD400E63D97 /* ViewController.swift in Sources */,
 				D4B4CFD228BF634000E63D97 /* LiveStationModel.swift in Sources */,
@@ -275,6 +282,7 @@
 				D4B4CFB228BD9F9400E63D97 /* MainTableView.swift in Sources */,
 				D4B4CFA028BD9AD400E63D97 /* SceneDelegate.swift in Sources */,
 				D4B4CFBD28BDA03100E63D97 /* MainTableViewCell.swift in Sources */,
+				349CF30229126ADA00BD6261 /* MainTableViewModel.swift in Sources */,
 				D4AEB15C28C9D18000401679 /* DetailVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

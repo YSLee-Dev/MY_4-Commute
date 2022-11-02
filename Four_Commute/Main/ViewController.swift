@@ -25,60 +25,32 @@ class ViewController: UIViewController {
         return DataFormmater.string(from: Date())
     }()
     
-    var stationArrival = StationArrival()
-    var saveStationLoad = SaveStationLoad()
     var bag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.viewSet()
-        self.bind()
-        
-        self.mainTableView.refreshOn.accept(Void())
     }
     
-}
-
-private extension ViewController {
-    func viewSet(){
-        self.navigationItem.title = "\(self.nowDate)도 화이팅"
-        self.navigationController?.navigationBar.prefersLargeTitles = true
-        
+    
+    func bind(viewModel : ViewControllerViewModel){
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "편집", style: .done, target: self, action: nil)
         
-        self.view.addSubview(self.mainTableView)
-        self.mainTableView.snp.makeConstraints{
-            $0.edges.equalToSuperview()
-        }
-    }
-    
-    func bind(){
-        self.mainTableView.refreshOn
+        self.mainTableView.bind(viewModel: viewModel.mainTableViewModel)
+        
+        viewModel.mainTableViewModel.refreshOn
             .flatMap{
-                let stations = self.saveStationLoad.stationLoad()
-                    .asObservable()
-                    .flatMap{ data -> Observable<SaveStationModel> in
-                        guard case .success(let value) = data else {return .never()}
-                        return Observable.from(value)
-                    }
-                
-                let arrivalData = stations
-                    .concatMap { station in
-                        self.stationArrival.stationArrivalRequest(stationName: station.stationName)
-                    }
-                    .map{ data -> LiveStationModel? in
-                        guard case .success(let value) = data else {return nil}
-                        return value
-                    }
-                    .filter{$0 != nil}
-                
-                return self.zipData(stations: stations, arrivalData: arrivalData)
-                
+                let stations = viewModel.saveStationLoadModel()
+                return viewModel.stationArrivalRequest(stations: stations)
             }
-            .bind(to: self.mainTableView.stationData)
+            .bind(to: viewModel.mainTableViewModel.stationData)
             .disposed(by: self.bag)
         
-        self.navigationItem.rightBarButtonItem!.rx.tap
+        viewModel.mainTableViewModel.refreshOn
+            .accept(Void())
+
+        
+        self.navigationItem.rightBarButtonItem?.rx.tap
             .map{ _ -> Bool in
                 if self.navigationItem.rightBarButtonItem!.title == "편집"{
                     self.navigationItem.rightBarButtonItem!.title = "완료"
@@ -88,23 +60,20 @@ private extension ViewController {
                     return false
                 }
             }
-            .bind(to: self.mainTableView.editBtnClick)
+            .bind(to: viewModel.mainTableViewModel.editBtnClick)
             .disposed(by: self.bag)
     }
-    
-    func zipData(stations: Observable<SaveStationModel>, arrivalData: Observable<LiveStationModel?>) -> Observable<[RealtimeStationArrival]>{
-        Observable
-            .zip(stations, arrivalData){ station, data -> RealtimeStationArrival in
-                for x in data!.realtimeArrivalList{
-                    if station.lineCode == x.subWayId && station.updnLine == x.upDown && station.stationName == x.stationName{
-                        return RealtimeStationArrival(upDown: x.upDown, arrivalTime: x.upDown, previousStation: x.previousStation, subPrevious: x.subPrevious, code: x.code, subWayId: x.subWayId, isFast: x.isFast, stationName: x.stationName, lineNumber: station.line, useLine: station.useLine)
-                    }
-                }
-                
-                return  RealtimeStationArrival(upDown: station.updnLine, arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: "", isFast: "X", stationName: station.stationName, lineNumber: station.line, useLine: station.useLine)
-            }
-            .toArray()
-            .asObservable()
+}
+
+private extension ViewController {
+    func viewSet(){
+        self.navigationItem.title = "\(self.nowDate)도 화이팅"
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        
+        self.view.addSubview(self.mainTableView)
+        self.mainTableView.snp.makeConstraints{
+            $0.edges.equalToSuperview()
+        }
     }
 }
 /*
@@ -122,7 +91,6 @@ private extension ViewController {
  let realOldData = self.realInfo[sourceIndexPath.row]
  self.realInfo[sourceIndexPath.row] = self.realInfo[destinationIndexPath.row]
  self.realInfo[destinationIndexPath.row] = realOldData
- 
  let StationOldData = FixInfo.saveStation[sourceIndexPath.row]
  FixInfo.saveStation[sourceIndexPath.row] = FixInfo.saveStation[destinationIndexPath.row]
  FixInfo.saveStation[destinationIndexPath.row] = StationOldData

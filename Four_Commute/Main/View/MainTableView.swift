@@ -14,12 +14,6 @@ import RxSwift
 import RxCocoa
 
 class MainTableView : UITableView {
-    
-    let stationData = BehaviorRelay<[RealtimeStationArrival]>(value: [])
-    let refreshOn = PublishRelay<Void>()
-    
-    let editBtnClick = PublishRelay<Bool>()
-    
     let bag = DisposeBag()
     
     lazy var refresh = UIRefreshControl().then{
@@ -30,7 +24,6 @@ class MainTableView : UITableView {
     override init(frame: CGRect, style: UITableView.Style) {
         super.init(frame: frame, style: style)
         self.viewSet()
-        self.bind()
     }
     
     required init?(coder: NSCoder) {
@@ -45,8 +38,8 @@ class MainTableView : UITableView {
         self.refreshControl = self.refresh
     }
     
-    private func bind(){
-        self.stationData
+    func bind(viewModel : MainTableViewModel){
+        viewModel.stationData
             .bind(to: self.rx.items){ tv, row, data in
                 guard let cell = tv.dequeueReusableCell(withIdentifier: "MainCell", for: IndexPath(row: row, section: 0)) as? MainTableViewCell else {return UITableViewCell()}
                 
@@ -66,22 +59,22 @@ class MainTableView : UITableView {
         
         self.refreshControl?.rx.controlEvent(.valueChanged)
             .asSignal(onErrorJustReturn: ())
-            .emit(to: self.refreshOn)
+            .emit(to: viewModel.refreshOn)
             .disposed(by: self.bag)
         
-        self.editBtnClick
+        viewModel.editBtnClick
             .bind(to: self.rx.isEditing)
             .disposed(by: self.bag)
         
         self.rx.itemDeleted
             .map{ index in
-                var nowData = self.stationData.value
+                var nowData = viewModel.stationData.value
                 nowData.remove(at: index.row)
-                self.stationData.accept(nowData)
+                viewModel.stationData.accept(nowData)
                 FixInfo.saveStation.remove(at: index.row)
                 return Void()
             }
-            .bind(to: self.refreshOn)
+            .bind(to: viewModel.refreshOn)
             .disposed(by: self.bag)
     }
 }
