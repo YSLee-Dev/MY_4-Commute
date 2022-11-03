@@ -13,28 +13,27 @@ import RxSwift
 class SearchBarVC : UISearchController{
     
     let bag = DisposeBag()
-    let searchBarText = PublishSubject<String?>()
     
     override init(searchResultsController: UIViewController?) {
         super.init(searchResultsController: searchResultsController)
-        self.bind()
         self.attribute()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-}
-
-private extension SearchBarVC {
-    func bind(){
+    
+    func bind(viewModel : SearchBarViewModel){
         self.searchBar.rx.text
             .asSignal(onErrorJustReturn: "")
             .distinctUntilChanged()
-            .emit(to: self.searchBarText)
+            .emit(to: viewModel.searchBarText)
             .disposed(by: self.bag)
     }
     
+}
+
+private extension SearchBarVC {
     func attribute(){
         self.searchBar.placeholder = "지하철역을 입력하세요."
     }

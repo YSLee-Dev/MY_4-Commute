@@ -15,20 +15,17 @@ import RxCocoa
 
 class SearchVC : UIViewController{
     var searchVC : SearchBarVC?
-    
-    let stationSearch = StationSearch()
     let resultVC = ResultVC()
+    
     let bag = DisposeBag()
     
     override func viewDidLoad() {
         self.viewSet()
-        self.bind()
     }
 }
 
-private extension SearchVC{
-    func viewSet(){
-        self.searchVC = SearchBarVC(searchResultsController: self.resultVC)
+extension SearchVC{
+    private func viewSet(){
         self.navigationItem.searchController = self.searchVC
         self.view.backgroundColor = .white
         self.navigationController?.navigationBar.prefersLargeTitles = true
@@ -36,27 +33,13 @@ private extension SearchVC{
         
     }
     
-    func bind(){
-        self.searchVC!.searchBarText
-            .filter{$0 != nil}
-            .flatMapLatest{
-                self.stationSearch.search(station: $0!)
-            }
-            .map{ data -> StationModel? in
-                guard case .success(let value) = data else{
-                    return nil
-                }
-                return value
-            }
-            .filter{$0 != nil}
-            .map{ stationModel -> [row] in
-               stationModel!.SearchInfoBySubwayNameService.row
-            }
-            .asSignal(onErrorJustReturn: [])
-            .emit(to: self.resultVC.resultRow)
-            .disposed(by: self.bag)
+    func bind(viewModel : SearchViewModel){
+        self.searchVC = SearchBarVC(searchResultsController: self.resultVC)
         
-        self.resultVC.clickRow
+        self.resultVC.bind(viewModel: viewModel.resultViewModel)
+        self.searchVC!.bind(viewModel: viewModel.searchBarViewModel)
+        
+        viewModel.resultViewModel.clickRow
             .subscribe(onNext: {
                 self.updownAlert(row: $0)
             })

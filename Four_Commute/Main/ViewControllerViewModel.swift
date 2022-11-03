@@ -18,7 +18,7 @@ struct ViewControllerViewModel{
     var saveStationLoad = SaveStationLoad()
     
     init(){
-       set()
+        set()
     }
     
     func set(){
