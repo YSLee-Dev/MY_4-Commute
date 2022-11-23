@@ -16,7 +16,7 @@ import RxCocoa
 class SearchVC : UIViewController{
     var searchVC : SearchBarVC?
     let resultVC = ResultVC()
-    
+
     let bag = DisposeBag()
     
     override func viewDidLoad() {

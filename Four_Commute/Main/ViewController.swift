@@ -35,13 +35,8 @@ class ViewController: UIViewController {
     
     func bind(viewModel : ViewControllerViewModel){
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "편집", style: .done, target: self, action: nil)
-        
         self.mainTableView.bind(viewModel: viewModel.mainTableViewModel)
-        
-        viewModel.mainTableViewModel.refreshOn
-            .accept(Void())
 
-        
         self.navigationItem.rightBarButtonItem?.rx.tap
             .map{ _ -> Bool in
                 if self.navigationItem.rightBarButtonItem!.title == "편집"{
@@ -54,6 +49,11 @@ class ViewController: UIViewController {
             }
             .bind(to: viewModel.mainTableViewModel.editBtnClick)
             .disposed(by: self.bag)
+        
+        viewModel.clickCellData
+            .drive(self.rx.detailVCPush)
+            .disposed(by: self.bag)
+            
     }
 }
 
@@ -68,6 +68,16 @@ private extension ViewController {
         }
     }
 }
+
+extension Reactive where Base : ViewController{
+    var detailVCPush : Binder<DetailVCInfo>{
+        return Binder(base){base, data in
+            let detailVC = DetailVC(info: data.realInfo, index: data.indexPath)
+            base.navigationController?.pushViewController(detailVC, animated: true)
+        }
+    }
+}
+
 /*
  extension ViewController : UITableViewDelegate, UITableViewDataSource{
  

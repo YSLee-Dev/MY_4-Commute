@@ -76,5 +76,9 @@ class MainTableView : UITableView {
             }
             .bind(to: viewModel.refreshOn)
             .disposed(by: self.bag)
+        
+        self.rx.itemSelected
+            .bind(to: viewModel.clickCell)
+            .disposed(by: self.bag)
     }
 }

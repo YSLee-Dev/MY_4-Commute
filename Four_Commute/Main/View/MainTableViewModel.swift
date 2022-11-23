@@ -12,6 +12,8 @@ import RxCocoa
 
 struct MainTableViewModel {
     let stationData = BehaviorRelay<[RealtimeStationArrival]>(value: [])
-    let refreshOn = PublishRelay<Void>()
+    let refreshOn = BehaviorRelay<Void>(value: Void())
     let editBtnClick = PublishRelay<Bool>()
+    
+    let clickCell = PublishRelay<IndexPath>()
 }

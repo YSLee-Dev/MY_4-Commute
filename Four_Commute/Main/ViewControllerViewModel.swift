@@ -10,58 +10,37 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-struct ViewControllerViewModel{
+class ViewControllerViewModel{
     let mainTableViewModel = MainTableViewModel()
+    let viewControllerModel = ViewControllerModel()
+    
     let bag = DisposeBag()
     
-    var stationArrival = StationArrival()
-    var saveStationLoad = SaveStationLoad()
+    let listData = PublishRelay<[RealtimeStationArrival]>()
+    let clickCellData : Driver<DetailVCInfo>
     
     init(){
-        set()
-    }
-    
-    func set(){
+        let clickData = self.mainTableViewModel.clickCell
+            .withLatestFrom(self.listData){
+                $1[$0.row]
+            }
+        
+        self.clickCellData = self.mainTableViewModel.clickCell
+            .withLatestFrom(clickData){
+                DetailVCInfo(realInfo: $1, indexPath: $0)
+            }
+            .asDriver(onErrorDriveWith: .empty())
+        
         mainTableViewModel.refreshOn
             .flatMap{
-                let stations = saveStationLoadModel()
-                return stationArrivalRequest(stations: stations)
+                let stations = self.viewControllerModel.saveStationLoadModel()
+                return self.viewControllerModel.stationArrivalRequest(stations: stations)
             }
+            .bind(to: self.listData)
+            .disposed(by: self.bag)
+        
+        self.listData
             .bind(to: mainTableViewModel.stationData)
             .disposed(by: self.bag)
-    }
-    
-    func saveStationLoadModel() -> Observable<SaveStationModel>{
-        self.saveStationLoad.stationLoad()
-            .asObservable()
-            .flatMap{ data -> Observable<SaveStationModel> in
-                guard case .success(let value) = data else {return .never()}
-                return Observable.from(value)
-            }
-    }
-    
-    func stationArrivalRequest(stations : Observable<SaveStationModel>) -> Observable<[RealtimeStationArrival]>{
-        let arrival = stations
-            .concatMap { station in
-                self.stationArrival.stationArrivalRequest(stationName: station.stationName)
-            }
-            .map{ data -> LiveStationModel? in
-                guard case .success(let value) = data else {return nil}
-                return value
-            }
-            .filter{$0 != nil}
-        
-        return Observable
-            .zip(stations, arrival){ station, data -> RealtimeStationArrival in
-                for x in data!.realtimeArrivalList{
-                    if station.lineCode == x.subWayId && station.updnLine == x.upDown && station.stationName == x.stationName{
-                        return RealtimeStationArrival(upDown: x.upDown, arrivalTime: x.upDown, previousStation: x.previousStation, subPrevious: x.subPrevious, code: x.code, subWayId: x.subWayId, isFast: x.isFast, stationName: x.stationName, lineNumber: station.line, useLine: station.useLine)
-                    }
-                }
-                
-                return  RealtimeStationArrival(upDown: station.updnLine, arrivalTime: "", previousStation: "", subPrevious: "", code: "", subWayId: "", isFast: "X", stationName: station.stationName, lineNumber: station.line, useLine: station.useLine)
-            }
-            .toArray()
-            .asObservable()
     }
 }
